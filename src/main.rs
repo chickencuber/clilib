@@ -1,5 +1,5 @@
 use std::env::args;
-use clilib::define; 
+use cmdparse::define; 
 
 
 define! {
