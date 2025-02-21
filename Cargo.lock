@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "cmdparse"
+name = "cmdparsing"
 version = "0.1.0"
 dependencies = [
  "tt-call",
