@@ -1,0 +1,13 @@
+[package]
+name = "clilib"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["chickencuber"]
+repository = "https://github.com/chickencuber/clilib"
+description = "adds a macro to parse arguments"
+
+
+[dependencies]
+tt-equal = "0.1.2"
+tt-call = "=1.0.9"
