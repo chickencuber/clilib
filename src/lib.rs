@@ -1,3 +1,5 @@
+pub use tt_call::tt_if;
+pub use tt_equal::tt_equal;
 #[macro_export]
 macro_rules! define {
     ($name:ident; flags {
@@ -7,8 +9,8 @@ macro_rules! define {
     };) => {
         #[derive(Debug)]
         struct $name {
-            $($fname: tt_call::tt_if!{
-                condition = [{tt_equal::tt_equal}]
+            $($fname: $crate::tt_if!{
+                condition = [{$crate::tt_equal}]
                     input = [{ $ftype bool }]
                     true = [{
                         bool
@@ -22,8 +24,8 @@ macro_rules! define {
         impl $name {
             pub fn from(mut __args: Vec<String>) -> Self{
                 $(
-                    tt_call::tt_if!{
-                        condition = [{tt_equal::tt_equal}]
+                    $crate::tt_if!{
+                        condition = [{$crate::tt_equal}]
                         input = [{ $ftype bool }]
                         true = [{
                             let mut $fname: bool = false;
@@ -68,8 +70,8 @@ macro_rules! define {
                     __ch.remove(0);
                     $(
                         if $(__ch == $flag)||* {
-                            tt_call::tt_if!{
-                                condition = [{tt_equal::tt_equal}]
+                            $crate::tt_if!{
+                                condition = [{$crate::tt_equal}]
                                     input = [{ $ftype bool }]
                                     true = [{
                                         $fname = true;
@@ -96,8 +98,8 @@ macro_rules! define {
             fn has_args(v: String) -> bool {
                 $(
                     if $(v == $flag)||* {
-                        tt_call::tt_if!{
-                            condition = [{tt_equal::tt_equal}]
+                        $crate::tt_if!{
+                            condition = [{$crate::tt_equal}]
                                 input = [{ $ftype bool }]
                                 true = [{
                                     return false;
