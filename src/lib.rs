@@ -110,10 +110,6 @@ macro_rules! define {
                         panic!("missing argument: '{}'", stringify!($aname));
                     }
                     while __args[__i].starts_with("-") {
-                        __args[__i].remove(0);
-                        if __args[__i].starts_with("-") {
-                            __args[__i].remove(0);
-                        } 
                         let v = Self::has_args(__args[__i].clone());
                         __args[__i].insert(0, '-');
                         if v.0 {
@@ -134,10 +130,6 @@ macro_rules! define {
                                         break;
                                     }
                                     while __args[__i].starts_with("-") {
-                                        __args[__i].remove(0);
-                                        if __args[__i].starts_with("-") {
-                                            __args[__i].remove(0);
-                                        } 
                                         let v = Self::has_args(__args[__i].clone());
                                         __args[__i].insert(0, '-');
                                         if v.0 {
@@ -160,6 +152,9 @@ macro_rules! define {
                                 panic!("too many arguments");
                             }
                             __ch.remove(0);
+                            if __ch.starts_with("-") {
+                                __ch.remove(0);
+                            }
                             $(
                                 if $(__ch == $flag)||* {
                                     tt_call::tt_if!{
