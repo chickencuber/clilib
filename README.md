@@ -7,7 +7,7 @@ use cmdparsing::define;
 
 define! {
     Data; //name of the struct
-    help: "usage: cmd [file(2)] [other]" //the usage of the command(shows when using -help, or --help(reserved flag))
+    help: "usage: cmd [file(2)] [other]"; //the usage of the command(shows when using -help, or --help(reserved flag))
     flags {
         t: bool = "w"|"h",  // a flag that uses a boolean
         f: String = "f", // a flag of type string
@@ -21,7 +21,7 @@ define! {
 }
 
 fn main() {
-    let d = Data::from(args().collect());
+    let d = Data::from(args().skip(1).collect());
     println!("{:?}", d);
 }
 

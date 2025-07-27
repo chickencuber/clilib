@@ -74,8 +74,8 @@ macro_rules! define {
                 }]
             },)*
             $(
-                $aname: $crate::helper!(exists;$($num)?, $atype)
-            ),*,
+                $aname: $crate::helper!(exists;$($num)?, $atype),
+            )*
             $(
                 $rname: Vec<$rtype>
             )?
@@ -100,7 +100,6 @@ macro_rules! define {
                 $(
                     let mut $rname: Vec<$rtype> = Vec::new();
                 )?
-                __args.remove(0);
                 if __args.contains(&"-help".to_string()) || __args.contains(&"--help".to_string()) {
                     panic!("{}", $help);
                 }
@@ -184,7 +183,7 @@ macro_rules! define {
             }
             fn has_args(v: String) -> (bool, usize) {
                 $(
-                    if $(v == $flag)||* {
+                    if $(v == concat!("-", $flag) || v == concat!("--", $flag))||* {
                         tt_call::tt_if!{
                             condition = [{tt_equal::tt_equal}]
                                 input = [{ $ftype bool }]

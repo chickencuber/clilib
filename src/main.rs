@@ -1,7 +1,6 @@
 use std::env::args;
 use cmdparsing::define; 
 
-
 define! {
     Data;
     help: "usage: cmd [file(2)] [other]";
@@ -18,6 +17,6 @@ define! {
 }
 
 fn main() {
-    let d = Data::from(args().collect());
+    let d = Data::from(args().skip(1).collect());
     println!("{:?}", d);
 }
