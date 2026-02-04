@@ -1,5 +1,4 @@
-use std::env::args;
-use cmdparsing::define; 
+use cmdparsing::{define, cmd}; 
 
 define! {
     Data;
@@ -16,7 +15,17 @@ define! {
     rest => more: String;
 }
 
-fn main() {
-    let d = Data::from(args().skip(1).collect());
+cmd! {
+    help: "usage: cmd [run|test]";
+    run => "run",
+    test => "test"|"alias",
+}
+
+
+fn test(_: Vec<String>) {
+    println!("this is a test");
+}
+fn run(args: Vec<String>) {
+    let d = Data::from(args.into_iter().skip(1).collect());
     println!("{:?}", d);
 }

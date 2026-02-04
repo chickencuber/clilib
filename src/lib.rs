@@ -19,22 +19,22 @@ macro_rules! helper {
         Vec<$then>
     };
     (exists_add;,$var:ident, $type:ty, $d:ident, $db:ident) => {
-        $var = <$type>::from($d[$db].clone());
+        $var = <$type>::from($d.get($db).expect("this is an error on line 22, please report this bug").clone());
         $d.remove($db);
     };
     (exists_add;$t:tt,$var:ident, $type:ty, $d:ident, $db:ident) => {
         for _ in 0..$t {
-            $var.push(<$type>::from($d[$db].clone()));
+            $var.push(<$type>::from($d.get($db).expect("this is an error on line 27, please report this bug").clone()));
             $d.remove($db);
         }
     };
     (exists_add_flag;,$var:ident, $type:ty, $d:ident, $db:expr) => {
-        $var = Some(<$type>::from($d[$db].clone()));
+        $var = Some(<$type>::from($d.get($db).expect("this is an error on line 32, please report this bug").clone()));
         $d.remove($db);
     };
     (exists_add_flag;$t:tt,$var:ident, $type:ty, $d:ident, $db:expr) => {
         for _ in 0..$t {
-            $var.push(<$type>::from($d[$db].clone()));
+            $var.push(<$type>::from($d.get($db).expect("this is an error on line 37, please report this bug").clone()));
             $d.remove($db);
         }
     };
@@ -52,6 +52,39 @@ macro_rules! helper {
     };
 }
 
+#[macro_export]
+macro_rules! cmd {
+    ($name:ident; help:$help:literal; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+        struct $name;   
+        impl $name {
+            pub fn run(v: Vec<String>) {
+                let cmd = v.get(0).expect($help).clone();
+                if cmd == "help" {
+                    println!($help);
+                    std::process::exit(0);
+                } else 
+                    $(
+                        if $(cmd == $str)||* {
+                            $fname(v);
+                        } else
+                    )* {
+                        eprintln!($help);
+                        std::process::exit(101);
+                    }
+            }
+        }
+    };
+    (help:$help:literal; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+        fn main() {
+            _Main::run(std::env::args().skip(1).collect());
+        }
+        $crate::cmd!{
+            _Main; 
+            help:$help;
+                 $($fname => $($str)|*),*
+        }
+    };
+}
 
 #[macro_export]
 macro_rules! define {
@@ -61,7 +94,7 @@ macro_rules! define {
         $($aname:ident: $atype:ty $(=> [$num:literal])?),*$(,)? 
     };
     $(rest => $rname:ident: $rtype:ty;)?) => {
-        #[derive(Debug)]
+        #[derive(Debug, Clone)]
         struct $name {
             $($fname: tt_call::tt_if!{
                 condition = [{tt_equal::tt_equal}]
@@ -76,109 +109,130 @@ macro_rules! define {
             $(
                 $aname: $crate::helper!(exists;$($num)?, $atype),
             )*
-            $(
-                $rname: Vec<$rtype>
-            )?
+                $(
+                    $rname: Vec<$rtype>
+                )?
         } 
         impl $name {
             pub fn from(mut __args: Vec<String>) -> Self{
+                let mut __handle_flags = true;
                 $(
                     tt_call::tt_if!{
                         condition = [{tt_equal::tt_equal}]
-                        input = [{ $ftype bool }]
-                        true = [{
-                            let mut $fname: bool = false;
-                        }]
+                            input = [{ $ftype bool }]
+                            true = [{
+                                let mut $fname: bool = false;
+                            }]
                         false = [{
                             $crate::helper!(exists_declare_flag;$($fnum)?, $fname, $ftype);
                         }]
                     }
                 )*
-                $(
-                    $crate::helper!(exists_declare;$($num)?,$aname, $atype);
-                )*
-                $(
-                    let mut $rname: Vec<$rtype> = Vec::new();
-                )?
-                if __args.contains(&"-help".to_string()) || __args.contains(&"--help".to_string()) {
-                    panic!("{}", $help);
-                }
+                    $(
+                        $crate::helper!(exists_declare;$($num)?,$aname, $atype);
+                    )*
+                    $(
+                        let mut $rname: Vec<$rtype> = Vec::new();
+                    )?
+                    if __args.contains(&"-help".to_string()) || __args.contains(&"--help".to_string()) {
+                        eprintln!($help);
+                        std::process::exit(0);
+                    }
                 let mut __i = 0;
                 $(
                     if __args.len() == 0 {
-                        panic!("missing argument: '{}'", stringify!($aname));
+                        eprintln!("missing argument: '{}'", stringify!($aname));
+                        std::process::exit(101);
                     }
-                    while __args[__i].starts_with("-") {
-                        let v = Self::has_args(__args[__i].clone());
-                        __args[__i].insert(0, '-');
+                    while __args.get(__i).expect("there is an error on line 146, please report this bug").starts_with("-") && __handle_flags {
+                        let v = Self::has_args(__args.get(__i).expect("there is an error on line 147, please report this bug").clone());
+                        __args.get_mut(__i).expect("there is an error on line 148, please report this bug").insert(0, '-');
                         if v.0 {
                             __i += v.1;
-                            if __args[__i].starts_with("-") {
-                                panic!("the flag requires an argument");
+                            if __args.get(__i).expect("there is an error on line 151, please report this bug").starts_with("-") && __handle_flags {
+                                eprintln!("the flag requires an argument");
+                                std::process::exit(101);
                             }
                         }
                         __i += 1;
                     }
 
                     $crate::helper!(exists_add; $($num)?, $aname, $atype, __args, __i);
-                    )*
-                        $(
-                            while __args.len() - __i > 0 {
-                                if __args[__i].starts_with("-") {
-                                    if $rname.len() > 0 {
+                )*
+                    $(
+                        while __args.len() - __i > 0 {
+                            if __args.get(__i).expect("there is an error on line 163, please report this bug").starts_with("-") && __handle_flags {
+                                if $rname.len() > 0 {
+                                    break;
+                                }
+                                while __args.get(__i).unwrap_or(&String::new()).starts_with("-") && __handle_flags {
+                                    let v = Self::has_args(__args.get(__i).expect("there is an error on line 168, please report this bug").clone());
+                                    if __args[__i] == "--" {
+                                        __handle_flags = false;
+                                        __args.remove(__i);
                                         break;
-                                    }
-                                    while __args[__i].starts_with("-") {
-                                        let v = Self::has_args(__args[__i].clone());
-                                        __args[__i].insert(0, '-');
-                                        if v.0 {
-                                            __i += v.1;
-                                            if __args[__i].starts_with("-") {
-                                                panic!("the flag requires an argument");
-                                            }
+                                    } 
+                                    __args.get_mut(__i).expect("there is an error on line 169, please report this bug").insert(0, '-');
+                                    if v.0 {
+                                        __i += v.1;
+                                        if __args.get(__i).unwrap_or(&String::from("-")).starts_with("-") && __handle_flags {
+                                            eprintln!("the flag requires an argument");
+                                            std::process::exit(101);
                                         }
-                                        __i += 1;
                                     }
+                                    __i += 1;
                                 }
-                                $rname.push(<$rtype>::from(__args[__i].clone()));
-                                __args.remove(__i);
+                            }
 
+                            if let Some(s) = __args.get(__i) {
+                                $rname.push(<$rtype>::from(s.clone()));
+                                __args.remove(__i);
                             }
-                    )?
-                        while __args.len() > 0 {
-                            let mut __ch = __args[0].clone();
-                            if !__ch.starts_with("-") {
-                                panic!("too many arguments");
-                            }
-                            __ch.remove(0);
-                            if __ch.starts_with("-") {
-                                __ch.remove(0);
-                            }
-                            $(
-                                if $(__ch == $flag)||* {
-                                    tt_call::tt_if!{
-                                        condition = [{tt_equal::tt_equal}]
-                                            input = [{ $ftype bool }]
-                                            true = [{
-                                                $fname = true;
-                                            }]
-                                        false = [{
-                                            if __args[1].starts_with("-") {
-                                                panic!("flags requires an argument");
-                                            }
-                                            $crate::helper!(exists_add_flag;$($fnum)?, $fname, $ftype, __args, 1);
-                                        }]
-                                    }   
-                                    __args.remove(0);
-                                    continue;
-                                }
-                            )*
-                                panic!("invalid flag {}", __ch);
+
                         }
+                )?
+                    while __args.len() > 0 {
+                        let mut __ch = __args.get(0).expect("there is an error on line 186, please report this bug").clone();
+                        if !(__ch.starts_with("-") && __handle_flags) {
+                            eprintln!("too many arguments");
+                            std::process::exit(101);
+                        }
+                        __ch.remove(0);
+                        if __ch.starts_with("-") && __handle_flags {
+                            __ch.remove(0);
+                        }
+                        $(
+                            if $(__ch == $flag)||* {
+                                tt_call::tt_if!{
+                                    condition = [{tt_equal::tt_equal}]
+                                        input = [{ $ftype bool }]
+                                        true = [{
+                                            $fname = true;
+                                        }]
+                                    false = [{
+                                        if __args[1].starts_with("-") && __handle_flags {
+                                            eprintln!("flags requires an argument");
+                                            std::process::exit(101);
+                                        }
+                                        $crate::helper!(exists_add_flag;$($fnum)?, $fname, $ftype, __args, 1);
+                                    }]
+                                }   
+                                __args.remove(0);
+                                continue;
+                            } else
+                        )*
+                            if (__ch == "-") {
+                                __handle_flags = false;
+                                __args.remove(0);
+                                break
+                            }
+                            eprintln!("invalid flag {}", __ch);
+                        std::process::exit(101);
+                    }
                 return Self {
                     $($fname,)*
-                    $($aname,)*
-                    $($rname)?
+                        $($aname,)*
+                        $($rname)?
                 }
             }
             fn has_args(v: String) -> (bool, usize) {
@@ -194,9 +248,13 @@ macro_rules! define {
                                 return (true, $crate::helper!(exists_or_zero;$($fnum)?));
                             }]
                         }   
-                    }
+                    } else
                 )*
-                    panic!("invalid flag {}", v);
+                    if(v == "--") {
+                        return (false, 0);
+                    }
+                eprintln!("invalid flag {}", v);
+                std::process::exit(101);
             }
         }
     };
