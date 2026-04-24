@@ -7,17 +7,17 @@ use cmdparsing::define;
 
 define! {
     Data; //name of the struct
-help: "usage: cmd [file(2)] [other]"; //the usage of the command(shows when using -help, or --help(reserved flag))
-      flags {
-t: bool = "w"|"h",  // a flag that uses a boolean
-       f: String = "f", // a flag of type string
-       o: String = "l" => [2], //a flag of type string with 2 entries
-      };
-      args {
-file: String => [2], //a positional argument with 2 entries(String)
-          other: String, //a positional argument with one entry(String)
-      };
-      rest => more: String; //a rest argument that takes strings(takes the last arguments unless its broken by a flag)
+    help: "usage: cmd [file(2)] [other]"; //the usage of the command(shows when using -help, or --help(reserved flag))
+    flags {
+        t: bool = "w"|"h",  // a flag that uses a boolean
+        f: String = "f", // a flag of type string
+        o: String = "l" => [2], //a flag of type string with 2 entries
+    };
+    args {
+        file: String => [2], //a positional argument with 2 entries(String)
+        other: String, //a positional argument with one entry(String)
+    };
+    rest => more: String; //a rest argument that takes strings(takes the last arguments unless its broken by a flag)
 }
 
 fn main() {
@@ -31,20 +31,25 @@ That example would generate this struct
 
 ```rust
 struct Data {
-t: bool,
-       f: Option<String>,
-       o: Vec<String>,
-       file: Vec<String>,
-       other: String,
-       more: Vec<String>,
+    t: bool,
+    f: Option<String>,
+    o: Vec<String>,
+    file: Vec<String>,
+    other: String,
+    more: Vec<String>,
 }
 ```
 ## there's also command pattern
 ```rust
 cmd! { // this generates a main function and runs it for you
-help: "usage: cmd [run|test]";
-      run => "run", //the ident is the function name and the string is the key for the command
-          test => "test"|"alias", //there are also aliases
+    help: "usage: cmd [run|test]";
+    :default_//you can have a default branch too
+    run => "run", //the ident is the function name and the string is the key for the command
+    test => "test"|"alias", //there are also aliases
+}
+
+fn default_(_: Vec<String>) {
+    println!("this is the default branch");
 }
 
 fn test(_: Vec<String>) {

@@ -17,10 +17,14 @@ define! {
 
 cmd! {
     help: "usage: cmd [run|test]";
+    :default_;
     run => "run",
     test => "test"|"alias",
 }
 
+fn default_(_: Vec<String>) {
+    println!("this is the default one");
+}
 
 fn test(_: Vec<String>) {
     println!("this is a test");

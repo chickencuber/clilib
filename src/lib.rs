@@ -54,7 +54,7 @@ macro_rules! helper {
 
 #[macro_export]
 macro_rules! cmd {
-    ($name:ident; help:$help:expr; default: $default:ident; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+    ($name:ident; help:$help:expr; :$default:ident; $($fname:ident => $($str:literal)|*),*$(,)?) => {
         struct $name;
         impl $name {
             pub fn run(v: Vec<String>) {
@@ -81,18 +81,18 @@ macro_rules! cmd {
         $crate::cmd!{
             _Main;
             help:$help;
-            default: _default;
+            :_default;
             $($fname => $($str)|*),*
         }
     };
-    (help:$help:expr; $(default: $default:ident;)? $($fname:ident => $($str:literal)|*),*$(,)?) => {
+    (help:$help:expr; $(:$default:ident;)? $($fname:ident => $($str:literal)|*),*$(,)?) => {
         fn main() {
             _Main::run(std::env::args().skip(1).collect());
         }
         $crate::cmd!{
             _Main;
             help:$help;
-            $(default:$default;)?
+            $(:$default;)?
             $($fname => $($str)|*),*
         }
     };
