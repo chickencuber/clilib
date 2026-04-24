@@ -58,6 +58,10 @@ macro_rules! cmd {
         struct $name;
         impl $name {
             pub fn run(v: Vec<String>) {
+                if v.len() == 0 {
+                    $default(v);
+                    return;
+                }
                 let cmd = v.get(0).expect(&format!("{}", $help)).clone();
                 if cmd == "help" {
                     println!("{}", $help);
