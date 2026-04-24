@@ -54,7 +54,7 @@ macro_rules! helper {
 
 #[macro_export]
 macro_rules! cmd {
-    ($name:ident; help:$help:expr; :$default:ident; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+    ($name:ident; help:$help:expr; :$default:expr; $($fname:expr=> $($str:literal)|*),*$(,)?) => {
         struct $name;
         impl $name {
             pub fn run(v: Vec<String>) {
@@ -77,7 +77,7 @@ macro_rules! cmd {
             }
         }
     };
-    ($name:ident; help:$help:expr; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+    ($name:ident; help:$help:expr; $($fname:expr=> $($str:literal)|*),*$(,)?) => {
         pub fn _default(_: Vec<String>) {
             eprintln!("{}", $help);
             std::process::exit(101);
@@ -89,7 +89,7 @@ macro_rules! cmd {
             $($fname => $($str)|*),*
         }
     };
-    (help:$help:expr; $(:$default:ident;)? $($fname:ident => $($str:literal)|*),*$(,)?) => {
+    (help:$help:expr; $(:$default:expr;)? $($fname:expr=> $($str:literal)|*),*$(,)?) => {
         fn main() {
             _Main::run(std::env::args().skip(1).collect());
         }
