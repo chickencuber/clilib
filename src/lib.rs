@@ -54,7 +54,7 @@ macro_rules! helper {
 
 #[macro_export]
 macro_rules! cmd {
-    ($name:ident; help:$help:literal; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+    ($name:ident; help:$help:expr; $($fname:ident => $($str:literal)|*),*$(,)?) => {
         struct $name;   
         impl $name {
             pub fn run(v: Vec<String>) {
@@ -74,7 +74,7 @@ macro_rules! cmd {
             }
         }
     };
-    (help:$help:literal; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+    (help:$help:expr; $($fname:ident => $($str:literal)|*),*$(,)?) => {
         fn main() {
             _Main::run(std::env::args().skip(1).collect());
         }
