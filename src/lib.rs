@@ -54,34 +54,46 @@ macro_rules! helper {
 
 #[macro_export]
 macro_rules! cmd {
-    ($name:ident; help:$help:expr; $($fname:ident => $($str:literal)|*),*$(,)?) => {
-        struct $name;   
+    ($name:ident; help:$help:expr; default: $default:ident; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+        struct $name;
         impl $name {
             pub fn run(v: Vec<String>) {
                 let cmd = v.get(0).expect(&format!("{}", $help)).clone();
                 if cmd == "help" {
                     println!("{}", $help);
                     std::process::exit(0);
-                } else 
+                } else
                     $(
                         if $(cmd == $str)||* {
                             $fname(v);
                         } else
                     )* {
-                        eprintln!("{}", $help);
-                        std::process::exit(101);
+                        $default(v);
                     }
             }
         }
     };
-    (help:$help:expr; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+    ($name:ident; help:$help:expr; $($fname:ident => $($str:literal)|*),*$(,)?) => {
+        pub fn _default(_: Vec<String>) {
+            eprintln!("{}", $help);
+            std::process::exit(101);
+        }
+        $crate::cmd!{
+            _Main;
+            help:$help;
+            default: _default;
+            $($fname => $($str)|*),*
+        }
+    };
+    (help:$help:expr; $(default: $default:ident;)? $($fname:ident => $($str:literal)|*),*$(,)?) => {
         fn main() {
             _Main::run(std::env::args().skip(1).collect());
         }
         $crate::cmd!{
-            _Main; 
+            _Main;
             help:$help;
-                 $($fname => $($str)|*),*
+            $(default:$default;)?
+            $($fname => $($str)|*),*
         }
     };
 }
@@ -91,7 +103,7 @@ macro_rules! define {
     ($name:ident; help: $help:expr; flags {
         $($fname:ident: $ftype:ty = $($flag:literal)|* $(=> [$fnum:literal])?),*$(,)?
     }; args {
-        $($aname:ident: $atype:ty $(=> [$num:literal])?),*$(,)? 
+        $($aname:ident: $atype:ty $(=> [$num:literal])?),*$(,)?
     };
     $(rest => $rname:ident: $rtype:ty;)?) => {
         #[derive(Debug, Clone)]
@@ -103,7 +115,7 @@ macro_rules! define {
                         bool
                     }]
                 false = [{
-                    $crate::helper!(exists_flag;$($fnum)?, $ftype) 
+                    $crate::helper!(exists_flag;$($fnum)?, $ftype)
                 }]
             },)*
             $(
@@ -112,7 +124,7 @@ macro_rules! define {
                 $(
                     $rname: Vec<$rtype>
                 )?
-        } 
+        }
         impl $name {
             pub fn from(mut __args: Vec<String>) -> Self{
                 let mut __handle_flags = true;
@@ -171,7 +183,7 @@ macro_rules! define {
                                         __handle_flags = false;
                                         __args.remove(__i);
                                         break;
-                                    } 
+                                    }
                                     __args.get_mut(__i).expect("there is an error on line 169, please report this bug").insert(0, '-');
                                     if v.0 {
                                         __i += v.1;
@@ -216,7 +228,7 @@ macro_rules! define {
                                         }
                                         $crate::helper!(exists_add_flag;$($fnum)?, $fname, $ftype, __args, 1);
                                     }]
-                                }   
+                                }
                                 __args.remove(0);
                                 continue;
                             } else
@@ -247,7 +259,7 @@ macro_rules! define {
                             false = [{
                                 return (true, $crate::helper!(exists_or_zero;$($fnum)?));
                             }]
-                        }   
+                        }
                     } else
                 )*
                     if(v == "--") {
