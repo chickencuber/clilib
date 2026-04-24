@@ -58,9 +58,9 @@ macro_rules! cmd {
         struct $name;   
         impl $name {
             pub fn run(v: Vec<String>) {
-                let cmd = v.get(0).expect($help).clone();
+                let cmd = v.get(0).expect(&format!("{}", $help)).clone();
                 if cmd == "help" {
-                    println!($help);
+                    println!("{}", $help);
                     std::process::exit(0);
                 } else 
                     $(
@@ -68,7 +68,7 @@ macro_rules! cmd {
                             $fname(v);
                         } else
                     )* {
-                        eprintln!($help);
+                        eprintln!("{}", $help);
                         std::process::exit(101);
                     }
             }
@@ -135,7 +135,7 @@ macro_rules! define {
                         let mut $rname: Vec<$rtype> = Vec::new();
                     )?
                     if __args.contains(&"-help".to_string()) || __args.contains(&"--help".to_string()) {
-                        eprintln!($help);
+                        eprintln!("{}", $help);
                         std::process::exit(0);
                     }
                 let mut __i = 0;
