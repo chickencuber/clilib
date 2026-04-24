@@ -88,7 +88,7 @@ macro_rules! cmd {
 
 #[macro_export]
 macro_rules! define {
-    ($name:ident; help: $help:literal; flags {
+    ($name:ident; help: $help:expr; flags {
         $($fname:ident: $ftype:ty = $($flag:literal)|* $(=> [$fnum:literal])?),*$(,)?
     }; args {
         $($aname:ident: $atype:ty $(=> [$num:literal])?),*$(,)? 
