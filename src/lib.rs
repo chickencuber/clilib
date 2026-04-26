@@ -112,7 +112,7 @@ macro_rules! define {
     $(rest => $rname:ident: $rtype:ty;)?) => {
         #[derive(Debug, Clone)]
         pub struct $name {
-            $($fname: tt_call::tt_if!{
+            $(pub $fname: tt_call::tt_if!{
                 condition = [{tt_equal::tt_equal}]
                     input = [{ $ftype bool }]
                     true = [{
@@ -123,10 +123,10 @@ macro_rules! define {
                 }]
             },)*
             $(
-                $aname: $crate::helper!(exists;$($num)?, $atype),
+                pub $aname: $crate::helper!(exists;$($num)?, $atype),
             )*
                 $(
-                    $rname: Vec<$rtype>
+                    pub $rname: Vec<$rtype>
                 )?
         }
         impl $name {
