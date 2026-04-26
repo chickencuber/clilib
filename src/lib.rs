@@ -55,7 +55,7 @@ macro_rules! helper {
 #[macro_export]
 macro_rules! cmd {
     ($name:ident; help:$help:expr; :$default:expr; $($fname:expr=> $($str:literal)|*),*$(,)?) => {
-        struct $name;
+        pub struct $name;
         impl $name {
             pub fn run(v: Vec<String>) {
                 if v.len() == 0 {
@@ -111,7 +111,7 @@ macro_rules! define {
     };
     $(rest => $rname:ident: $rtype:ty;)?) => {
         #[derive(Debug, Clone)]
-        struct $name {
+        pub struct $name {
             $($fname: tt_call::tt_if!{
                 condition = [{tt_equal::tt_equal}]
                     input = [{ $ftype bool }]
