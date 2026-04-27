@@ -145,7 +145,6 @@ macro_rules! cmd {
                          $(:$default;)?
                          $($fname => $($str)|*),*
             }
-            _Main;
             _Main::run(std::env::args().skip(1).collect());
         }
     };
