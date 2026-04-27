@@ -109,7 +109,6 @@ macro_rules! cmd {
                     } else
                         $(
                             if $(cmd == $str)||* {
-                                v.remove(0);
                                 let args = <$cmd>::from(v.clone());
                                 $fname(args);
                             } else
