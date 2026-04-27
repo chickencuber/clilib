@@ -129,7 +129,7 @@ macro_rules! cmd {
             std::process::exit(101);
         }
         $crate::cmd!{
-            _Main;
+            $name:ident;
             help:$help;
             $(.$cmd;)?
             :_default;
@@ -138,14 +138,15 @@ macro_rules! cmd {
     };
     (help:$help:expr; $(.$cmd:ty;)? $(:$default:expr;)? $($fname:expr=> $($str:literal)|*),*$(,)?) => {
         fn main() {
-            _Main::run(std::env::args().skip(1).collect());
-        }
-        $crate::cmd!{
+            $crate::cmd!{
+                _Main;
+                help:$help;
+                     $(.$cmd;)?
+                         $(:$default;)?
+                         $($fname => $($str)|*),*
+            }
             _Main;
-            help:$help;
-            $(.$cmd;)?
-            $(:$default;)?
-            $($fname => $($str)|*),*
+            _Main::run(std::env::args().skip(1).collect());
         }
     };
 }
