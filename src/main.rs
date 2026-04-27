@@ -17,19 +17,19 @@ define! {
 
 cmd! {
     help: "usage: cmd [run|test]";
+    .Data;
     :default_;
     run => "run",
     test => "test"|"alias",
 }
 
-fn default_(_: Vec<String>) {
+fn default_(_: Data) {
     println!("this is the default one");
 }
 
-fn test(_: Vec<String>) {
+fn test(_: Data) {
     println!("this is a test");
 }
-fn run(args: Vec<String>) {
-    let d = Data::from(args.into_iter().skip(1).collect());
+fn run(d: Data) {
     println!("{:?}", d);
 }

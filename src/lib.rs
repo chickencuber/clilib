@@ -19,22 +19,22 @@ macro_rules! helper {
         Vec<$then>
     };
     (exists_add;,$var:ident, $type:ty, $d:ident, $db:ident) => {
-        $var = <$type>::from($d.get($db).expect("this is an error on line 22, please report this bug").clone());
+        $var = <$type>::from($d.get($db).expect("this is an error on line 22, please report this bug to https://github.com/chickencuber/clilib").clone());
         $d.remove($db);
     };
     (exists_add;$t:tt,$var:ident, $type:ty, $d:ident, $db:ident) => {
         for _ in 0..$t {
-            $var.push(<$type>::from($d.get($db).expect("this is an error on line 27, please report this bug").clone()));
+            $var.push(<$type>::from($d.get($db).expect("this is an error on line 27, please report this bug to https://github.com/chickencuber/clilib").clone()));
             $d.remove($db);
         }
     };
     (exists_add_flag;,$var:ident, $type:ty, $d:ident, $db:expr) => {
-        $var = Some(<$type>::from($d.get($db).expect("this is an error on line 32, please report this bug").clone()));
+        $var = Some(<$type>::from($d.get($db).expect("this is an error on line 32, please report this bug to https://github.com/chickencuber/clilib").clone()));
         $d.remove($db);
     };
     (exists_add_flag;$t:tt,$var:ident, $type:ty, $d:ident, $db:expr) => {
         for _ in 0..$t {
-            $var.push(<$type>::from($d.get($db).expect("this is an error on line 37, please report this bug").clone()));
+            $var.push(<$type>::from($d.get($db).expect("this is an error on line 37, please report this bug to https://github.com/chickencuber/clilib").clone()));
             $d.remove($db);
         }
     };
@@ -77,25 +77,74 @@ macro_rules! cmd {
             }
         }
     };
-    ($name:ident; help:$help:expr; $($fname:expr=> $($str:literal)|*),*$(,)?) => {
-        pub fn _default(_: Vec<String>) {
+    ($name:ident; help:$help:expr; .$cmd:ty; :$default:expr; $($fname:expr=> $($str:literal)|*),*$(,)?) => {
+        pub struct $name;
+        impl $name {
+            pub fn run(mut v: Vec<String>) {
+                let mut cmd: Option<String> = None;
+                let mut allow_flags = false;
+
+                for i in 0..v.len() {
+                    let a = &v[i];
+                    if allow_flags {
+                        cmd = Some(a.clone());
+                        v.remove(i);
+                        break;
+                    }
+                    if a == "--" {
+                        allow_flags = true;
+                        continue;
+                    }
+                    if a.starts_with("-") {
+                        continue;
+                    }
+                    cmd = Some(a.clone());
+                    v.remove(i);
+                    break;
+                }
+                if let Some(cmd) = cmd {
+                    if cmd == "help" {
+                        println!("{}", $help);
+                        std::process::exit(0);
+                    } else
+                        $(
+                            if $(cmd == $str)||* {
+                                v.remove(0);
+                                let args = <$cmd>::from(v.clone());
+                                $fname(args);
+                            } else
+                        )* {
+                            let args = <$cmd>::from(v.clone());
+                            $default(args);
+                            }
+                } else {
+                    let args = <$cmd>::from(v.clone());
+                    $default(args);
+                }
+            }
+        }
+    };
+    ($name:ident; help:$help:expr; $(.$cmd:ty;)? $($fname:expr=> $($str:literal)|*),*$(,)?) => {
+        fn _default<T>(_: T) {
             eprintln!("{}", $help);
             std::process::exit(101);
         }
         $crate::cmd!{
             _Main;
             help:$help;
+            $(.$cmd;)?
             :_default;
             $($fname => $($str)|*),*
         }
     };
-    (help:$help:expr; $(:$default:expr;)? $($fname:expr=> $($str:literal)|*),*$(,)?) => {
+    (help:$help:expr; $(.$cmd:ty;)? $(:$default:expr;)? $($fname:expr=> $($str:literal)|*),*$(,)?) => {
         fn main() {
             _Main::run(std::env::args().skip(1).collect());
         }
         $crate::cmd!{
             _Main;
             help:$help;
+            $(.$cmd;)?
             $(:$default;)?
             $($fname => $($str)|*),*
         }
@@ -160,12 +209,12 @@ macro_rules! define {
                         eprintln!("missing argument: '{}'", stringify!($aname));
                         std::process::exit(101);
                     }
-                    while __args.get(__i).expect("there is an error on line 146, please report this bug").starts_with("-") && __handle_flags {
-                        let v = Self::has_args(__args.get(__i).expect("there is an error on line 147, please report this bug").clone());
-                        __args.get_mut(__i).expect("there is an error on line 148, please report this bug").insert(0, '-');
+                    while __args.get(__i).expect("there is an error on line 146, please report this bug to https://github.com/chickencuber/clilib").starts_with("-") && __handle_flags {
+                        let v = Self::has_args(__args.get(__i).expect("there is an error on line 147, please report this bug to https://github.com/chickencuber/clilib").clone());
+                        __args.get_mut(__i).expect("there is an error on line 148, please report this bug to https://github.com/chickencuber/clilib").insert(0, '-');
                         if v.0 {
                             __i += v.1;
-                            if __args.get(__i).expect("there is an error on line 151, please report this bug").starts_with("-") && __handle_flags {
+                            if __args.get(__i).expect("there is an error on line 151, please report this bug to https://github.com/chickencuber/clilib").starts_with("-") && __handle_flags {
                                 eprintln!("the flag requires an argument");
                                 std::process::exit(101);
                             }
@@ -177,18 +226,18 @@ macro_rules! define {
                 )*
                     $(
                         while __args.len() - __i > 0 {
-                            if __args.get(__i).expect("there is an error on line 163, please report this bug").starts_with("-") && __handle_flags {
+                            if __args.get(__i).expect("there is an error on line 163, please report this bug to https://github.com/chickencuber/clilib").starts_with("-") && __handle_flags {
                                 if $rname.len() > 0 {
                                     break;
                                 }
                                 while __args.get(__i).unwrap_or(&String::new()).starts_with("-") && __handle_flags {
-                                    let v = Self::has_args(__args.get(__i).expect("there is an error on line 168, please report this bug").clone());
+                                    let v = Self::has_args(__args.get(__i).expect("there is an error on line 168, please report this bug to https://github.com/chickencuber/clilib").clone());
                                     if __args[__i] == "--" {
                                         __handle_flags = false;
                                         __args.remove(__i);
                                         break;
                                     }
-                                    __args.get_mut(__i).expect("there is an error on line 169, please report this bug").insert(0, '-');
+                                    __args.get_mut(__i).expect("there is an error on line 169, please report this bug to https://github.com/chickencuber/clilib").insert(0, '-');
                                     if v.0 {
                                         __i += v.1;
                                         if __args.get(__i).unwrap_or(&String::from("-")).starts_with("-") && __handle_flags {
@@ -208,7 +257,7 @@ macro_rules! define {
                         }
                 )?
                     while __args.len() > 0 {
-                        let mut __ch = __args.get(0).expect("there is an error on line 186, please report this bug").clone();
+                        let mut __ch = __args.get(0).expect("there is an error on line 186, please report this bug to https://github.com/chickencuber/clilib").clone();
                         if !(__ch.starts_with("-") && __handle_flags) {
                             eprintln!("too many arguments");
                             std::process::exit(101);
