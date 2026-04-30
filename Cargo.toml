@@ -1,10 +1,10 @@
 [package]
 name = "cmdparsing"
-version = "2.2.3"
+version = "2.2.4"
 edition = "2021"
 license = "MIT"
 authors = ["chickencuber"]
-repository = "https://github.com/chickencuber/clilib"
+repository = "https://github.com/chickencuber/cmdparsing"
 description = "adds a macro to parse arguments"
 
 
