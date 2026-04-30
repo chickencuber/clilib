@@ -63,7 +63,7 @@ macro_rules! cmd {
                     return;
                 }
                 let cmd = v.get(0).expect(&format!("{}", $help)).clone();
-                if cmd == "help" {
+                if cmd == "help" || cmd == "?" {
                     println!("{}", $help);
                     std::process::exit(0);
                 } else
@@ -103,7 +103,7 @@ macro_rules! cmd {
                     break;
                 }
                 if let Some(cmd) = cmd {
-                    if cmd == "help" {
+                    if cmd == "help" || cmd == "?" {
                         println!("{}", $help);
                         std::process::exit(0);
                     } else
@@ -113,6 +113,7 @@ macro_rules! cmd {
                                 $fname(args);
                             } else
                         )* {
+                            v.insert(0, cmd);
                             let args = <$cmd>::from(v.clone());
                             $default(args);
                             }
@@ -198,7 +199,12 @@ macro_rules! define {
                     $(
                         let mut $rname: Vec<$rtype> = Vec::new();
                     )?
-                    if __args.contains(&"-help".to_string()) || __args.contains(&"--help".to_string()) {
+                    if
+                        __args.contains(&"-help".to_string()) ||
+                        __args.contains(&"--help".to_string()) ||
+                        __args.contains(&"-?".to_string()) ||
+                        __args.contains(&"--?".to_string())
+                    {
                         eprintln!("{}", $help);
                         std::process::exit(0);
                     }

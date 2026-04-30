@@ -9,11 +9,10 @@ define! {
         o: String = "l" => [2],
     };
     args {
-        file: String => [2],
-        other: String,
     };
-    rest => more: String;
 }
+
+type T = Data;
 
 cmd! {
     help: "usage: cmd [run|test]";
@@ -23,13 +22,13 @@ cmd! {
     test => "test"|"alias",
 }
 
-fn default_(_: Data) {
+fn default_(_: T) {
     println!("this is the default one");
 }
 
-fn test(_: Data) {
+fn test(_: T) {
     println!("this is a test");
 }
-fn run(d: Data) {
+fn run(d: T) {
     println!("{:?}", d);
 }
